@@ -321,7 +321,7 @@ export default function Project({ id }) {
 
   const firstMetric = project.metrics?.[0]
 
-  const headlineResult = !firstMetric
+  const headlineResult = project.resultSummary || (!firstMetric
     ? 'Not available'
     : firstMetric[1] == null
       ? 'Evaluation pending'
@@ -329,7 +329,7 @@ export default function Project({ id }) {
         firstMetric[2] === 1
           ? firstMetric[1]
           : firstMetric[1].toLocaleString()
-      )
+      ))
 
   const summary = [
     [
@@ -643,6 +643,15 @@ export default function Project({ id }) {
 
 
           <div className="metrics">
+
+            {project.outcomes?.map(([label, description]) => (
+              <Reveal key={label} v="clip" className="bcard">
+                <div className="metric">
+                  <span className="mono-s">{label}</span>
+                  <p>{description}</p>
+                </div>
+              </Reveal>
+            ))}
 
             {project.metrics.map(
               ([label, value, max, prefix = '']) => (

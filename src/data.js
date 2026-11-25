@@ -51,7 +51,6 @@ export const focus = [
     d: 'The path from a notebook to a service people can actually use.',
     rows: [
       'Inference APIs with FastAPI',
-      'Containerised backends',
       'React interfaces for models',
       'PostgreSQL data layer',
       'Deployment on Vercel and GCP',
@@ -140,7 +139,6 @@ export const skills = [
       'MLflow',
       'FastAPI',
       'REST APIs',
-      'Docker',
       'Git',
       'GitHub',
       'React',
@@ -264,7 +262,80 @@ export const eduPath = [
 export const projects = [
 
   // =====================================================
-  // PROJECT 01 — ZIPRO
+  // PROJECT 01 — DOTLINK
+  // =====================================================
+
+  {
+    id: 'dotlink',
+    thumb: 'dotlink',
+    title: 'DotLink',
+    kind: 'Agentic AI & Full-Stack Engineering',
+    tagline: 'AI-Powered Creative Operations Workspace',
+    sub: 'Connecting creative work and business operations through intelligent conversations',
+    short: 'An AI-powered workspace for designers and marketing managers to manage clients, projects, tasks and finances through a single dashboard or natural-language conversations with Dottie.',
+    gh: 'https://github.com/Mohamed-Akshan/DotLink',
+    live: 'https://dotlink-studio.vercel.app/',
+    tools: [
+      'React', 'FastAPI', 'LangGraph', 'PostgreSQL', 'Python',
+      'JavaScript', 'LangChain', 'OpenAI', 'Gemini', 'SQLAlchemy',
+      'Pydantic', 'JWT', 'Argon2', 'REST APIs', 'Langfuse',
+      'Recharts', 'ReportLab'
+    ],
+    problem: [
+      'During my time as a graphic designer, I realised that creating designs was only one part of the job. Freelance designers and creative teams also have to communicate with clients, prepare quotations, manage revisions, track deadlines, create invoices and record payments. These responsibilities often take valuable time away from the actual creative work.',
+      'Consider a freelance designer working on a branding package for a new client. Before the design work begins, the designer needs to record the client details, agree on the scope, prepare a quotation and confirm the deadline. As the work progresses, revisions and deliverables must be tracked, approvals recorded, an invoice prepared and payments followed up.',
+      'Although these activities belong to the same project, the information is often scattered across WhatsApp conversations, spreadsheets, emails and separate financial tools. Answering a simple question such as whether a quotation has been accepted, which tasks are overdue or how much a client still owes can require checking several places.',
+      'For a freelance designer or marketing manager handling multiple clients and campaigns, these disconnected workflows make it easier to overlook deadlines, miss approvals or lose track of payments. This made me wonder: what if these operations could live in one place, and what if managing them was as simple as having a conversation?'
+    ],
+    solution: [
+      'That experience inspired me to build DotLink, an AI-powered creative operations workspace designed especially for graphic designers, freelance designers, creative teams and marketing managers. Although its workflow reflects the needs of creative professionals, other service-based businesses can use it to organise their clients, projects, tasks and finances.',
+      'DotLink brings client profiles, projects, tasks, service rates, quotations, invoices, payments and expenses into a connected workspace. Users can work through the dashboard or interact with Dottie, the built-in AI assistant. For example, a user can ask Dottie to prepare a quotation using their existing service rates, update a project deadline, record an advance payment or find overdue tasks.',
+      'The important distinction is that Dottie goes beyond answering questions. It retrieves authorised records, determines which business tools are needed, identifies missing details and prepares create or update operations. Before any AI-initiated modification is executed, the user can review, edit where supported, approve or decline the proposal. Backend services validate the request and carry out the approved action.',
+      'I built a supervisor-led LangGraph workflow with three specialist agents covering operations, finance and analytics. They use workspace-scoped tools through a FastAPI backend, while SQLAlchemy and PostgreSQL manage persistent business records. Financial calculations are performed by backend code rather than by the language model. JWT authentication, structured validation, domain guardrails and approval checks help keep actions within the intended workspace.',
+      'The React interface also includes task views, financial dashboards and downloadable documents and reports. OpenAI and Gemini support the model configuration, and Langfuse provides workflow tracing. The goal is to reduce repetitive administration while keeping business owners in control of their work and data.'
+    ],
+    arch: [
+      ['User Request', 'A user asks Dottie to retrieve information or carry out a business task through the React workspace.'],
+      ['FastAPI & Guardrails', 'The backend checks authentication, workspace access and whether the request fits the business domain.'],
+      ['Supervisor Agent', 'The LangGraph supervisor interprets the request and routes it to the appropriate specialist.'],
+      ['Operations, Finance & Analytics Agents', 'Specialist agents handle operational records, financial workflows or business reporting according to the request.'],
+      ['Workspace Tools & Validation', 'Structured tools retrieve relevant records and validate inputs against backend business rules.'],
+      ['Read or Write Proposal', 'Read requests return authorised information; proposed modifications are prepared for review.'],
+      ['Human Approval', 'The user reviews and approves or declines the proposed change before execution.'],
+      ['Approved Execution', 'Backend services revalidate the approved action, update PostgreSQL and return the execution result.'],
+      ['Response & Observability', 'Dottie communicates the result while Langfuse traces the AI workflow.']
+    ],
+    features: [
+      'Supervisor-led multi-agent workflow with operations, finance and analytics specialists',
+      'Natural-language retrieval, creation and editing of supported business records',
+      'Client, project, task and reusable service-rate management',
+      'Task list and Kanban views with deadlines, status and priorities',
+      'Quotation and invoice lifecycle with downloadable PDFs',
+      'Partial and full payments, expense recording and outstanding balances',
+      'Financial dashboard with project-level cash-basis insights',
+      'Human approval before every AI-initiated business modification',
+      'JWT authentication, Argon2 password hashing and workspace-scoped access',
+      'Structured validation, domain guardrails and duplicate or overpayment checks',
+      'OpenAI and Gemini model configuration with Langfuse observability',
+      'Responsive React interface and FastAPI REST services'
+    ],
+    metrics: [],
+    metricNote: 'workflow capabilities, not benchmark scores.',
+    resultSummary: 'Human-approved AI actions',
+    outcomes: [
+      ['Connected workflow', 'Manage the path from client and quotation to project, invoice, payment and expenses in one workspace.'],
+      ['Controlled AI actions', 'Review proposed changes before execution; enforce authorisation and business validation on the backend.'],
+      ['Financial visibility', 'Review cash-basis business performance and generate reports without relying on the language model for financial arithmetic.']
+    ],
+    learned: [
+      'Building DotLink taught me that an AI assistant which acts on business data needs a different level of care from an assistant that only generates text. Authorisation, validation, approval and execution must be designed together.',
+      'Connecting a conversational interface to reliable CRUD operations, financial rules and a usable dashboard showed me how full-stack engineering and agentic AI can complement each other. I have not measured time savings or productivity improvements, so the case study focuses on the implemented workflow rather than unsupported performance claims.'
+    ]
+  },
+
+
+  // =====================================================
+  // PROJECT 02 — ZIPRO
   // =====================================================
 
   {
@@ -393,7 +464,7 @@ export const projects = [
 
 
   // =====================================================
-  // PROJECT 02 — STOREBRIDGE MCP
+  // PROJECT 03 — STOREBRIDGE MCP
   // =====================================================
 
   {
@@ -527,7 +598,7 @@ export const projects = [
 
 
   // =====================================================
-  // PROJECT 03 — CREDIT RISK
+  // PROJECT 04 — CREDIT RISK
   // ORIGINAL CONTENT PRESERVED
   // =====================================================
 
@@ -551,8 +622,7 @@ export const projects = [
       'XGBoost',
       'MLflow',
       'FastAPI',
-      'React',
-      'Docker'
+      'React'
     ],
 
     problem: [
@@ -584,7 +654,7 @@ export const projects = [
       'Three-model benchmark with MLflow experiment tracking',
       'Default probability display for informed human review',
       'Model artifacts and preprocessing packaged together',
-      'Docker-packaged FastAPI backend with React frontend'
+      'FastAPI backend with React frontend'
     ],
 
     metrics: [
@@ -605,7 +675,7 @@ export const projects = [
 
 
   // =====================================================
-  // PROJECT 04 — SAMSUNG SALES
+  // PROJECT 05 — SAMSUNG SALES
   // ORIGINAL CONTENT PRESERVED
   // =====================================================
 

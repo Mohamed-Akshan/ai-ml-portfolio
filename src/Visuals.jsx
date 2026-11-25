@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 
 // Project thumbnails
 // Black and red theme matching the existing portfolio.
@@ -6,10 +8,50 @@ const R = '#e5352b'
 
 
 function Frame({ label, title, children }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const svg = ref.current
+    if (!svg) return
+
+    let visible = false
+    const motion = matchMedia('(prefers-reduced-motion: reduce)')
+
+    const sync = () => {
+      const paused = !visible || document.hidden || motion.matches
+      svg.classList.toggle('thumb-paused', paused)
+      svg.classList.toggle('thumb-static', motion.matches)
+
+      if (motion.matches) svg.setCurrentTime?.(4)
+      if (paused) svg.pauseAnimations?.()
+      else svg.unpauseAnimations?.()
+    }
+
+    const observer = 'IntersectionObserver' in window
+      ? new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting
+        sync()
+      }, { rootMargin: '0px', threshold: 0.01 })
+      : null
+
+    if (observer) observer.observe(svg)
+    else visible = true
+    document.addEventListener('visibilitychange', sync)
+    motion.addEventListener?.('change', sync)
+    sync()
+
+    return () => {
+      observer?.disconnect()
+      document.removeEventListener('visibilitychange', sync)
+      motion.removeEventListener?.('change', sync)
+    }
+  }, [])
+
   return (
     <svg
+      ref={ref}
       viewBox="0 0 640 400"
-      className="thumb"
+      className="thumb thumb-paused"
       role="img"
       aria-label={label}
     >
@@ -56,6 +98,58 @@ function Frame({ label, title, children }) {
 
       {children}
     </svg>
+  )
+}
+
+
+// =====================================================
+// DOTLINK — Creative Operations Workspace
+// =====================================================
+
+function DotLink() {
+  return (
+    <Frame
+      label="Illustrative DotLink workflow: Dottie prepares a quotation for human approval"
+      title="dotlink / creative operations workspace"
+    >
+      <rect x="44" y="80" width="116" height="276" rx="12" fill="#101012" stroke="#2b2b2e" />
+      <text x="57" y="105" fill="#fff" fontSize="16" fontWeight="600">DotLink</text>
+      {['Overview', 'Clients', 'Projects', 'Tasks', 'Services', 'Finance', 'Approvals'].map((label, i) => (
+        <g key={label}>
+          {i === 5 && <rect x="51" y={120 + i * 27} width="102" height="23" rx="5" fill="#33201f" />}
+          <circle cx="61" cy={131 + i * 27} r="3" fill={i === 5 ? R : '#66666c'} />
+          <text x="72" y={135 + i * 27} fontSize="10" fill={i === 5 ? '#ff665a' : '#b3b3b9'}>{label}</text>
+        </g>
+      ))}
+      <rect x="172" y="80" width="420" height="276" rx="12" fill="#101012" stroke="#2b2b2e" />
+      <circle cx="192" cy="103" r="8" fill={R} />
+      <path d="M188 104L191 107L196 99" stroke="#fff" strokeWidth="1.6" fill="none" />
+      <text x="206" y="107" fill="#fff" fontSize="13" fontWeight="600">Dottie</text>
+      <text x="579" y="107" textAnchor="end" fill="#85858b" fontSize="9" className="t-mono">AI ASSISTANT</text>
+      <g className="fadein">
+        <rect x="249" y="124" width="325" height="47" rx="8" fill="#252529" />
+        <text x="262" y="143" fill="#fff" fontSize="11">Prepare a quotation for the branding project.</text>
+        <text x="262" y="158" fill="#aaaab0" fontSize="10">Use the existing service rates.</text>
+      </g>
+      <g className="fadein" style={{ animationDelay: '.6s' }}>
+        <rect x="189" y="184" width="385" height="45" rx="8" fill="#1c1c20" stroke="#38383c" />
+        <text x="203" y="202" fill="#ff665a" fontSize="10" className="t-mono">FINANCE AGENT</text>
+        <text x="203" y="218" fill="#d9d9dc" fontSize="10">Service rates retrieved. Preparing proposal.</text>
+        <path d="M532 207H558" stroke="#55555b" strokeDasharray="3 3" />
+        <circle cx="532" cy="207" r="3.5" fill={R}>
+          <animate attributeName="cx" values="532;558;532" dur="2.5s" repeatCount="indefinite" />
+        </circle>
+      </g>
+      <g className="fadein" style={{ animationDelay: '1.3s' }}>
+        <rect x="189" y="240" width="385" height="99" rx="9" fill="#202023" stroke={R} strokeOpacity=".75" />
+        <text x="203" y="260" fill="#ff665a" fontSize="10" className="t-mono">APPROVAL REQUIRED</text>
+        <text x="203" y="280" fill="#fff" fontSize="13" fontWeight="600">Branding quotation</text>
+        <text x="203" y="299" fill="#fff" fontSize="17" fontWeight="600">Rs. 45,000</text>
+        <rect x="203" y="310" width="101" height="19" rx="5" fill={R} />
+        <text x="253" y="323" fill="#fff" fontSize="9" textAnchor="middle">Review proposal</text>
+        <text x="317" y="323" fill="#a5a5aa" fontSize="9">Awaiting approval</text>
+      </g>
+    </Frame>
   )
 }
 
@@ -975,6 +1069,10 @@ export default function Thumb({ kind, img }) {
         alt=""
       />
     )
+  }
+
+  if (kind === 'dotlink') {
+    return <DotLink />
   }
 
   if (kind === 'zipro') {

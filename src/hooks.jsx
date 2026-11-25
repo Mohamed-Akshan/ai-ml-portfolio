@@ -1,35 +1,51 @@
 import { useEffect, useRef, useState } from 'react'
-import Lenis from 'lenis'
 
 export const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 export const pad = n => String(n).padStart(2, '0')
 
 /* ---------- Smooth, inertial scrolling (Apple-style) ---------- */
+// Native scrolling avoids a second animation loop competing with the browser.
 export let lenis = null
-export function useSmoothScroll() {
-  useEffect(() => {
-    if (reduced()) return
-    lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.95, smoothWheel: true })
-    let id; const raf = t => { lenis.raf(t); id = requestAnimationFrame(raf) }; id = requestAnimationFrame(raf)
-    return () => { cancelAnimationFrame(id); lenis.destroy(); lenis = null }
-  }, [])
-}
+export function useSmoothScroll() { }
 export const scrollToId = (id, offset = 0) => {
-  const el = document.getElementById(id); if (!el) return
-  if (lenis) lenis.scrollTo(el, { offset, duration: 1.5, easing: t => 1 - Math.pow(1 - t, 4) })
-  else el.scrollIntoView({ behavior: 'smooth' })
+  const el = document.getElementById(id)
+  if (!el) return
+  window.scrollTo({
+    top: window.scrollY + el.getBoundingClientRect().top + offset,
+    behavior: reduced() ? 'instant' : 'smooth'
+  })
 }
-export const scrollTop = () => { lenis ? lenis.scrollTo(0, { immediate: true }) : scrollTo(0, 0) }
+export const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' })
 
-/* ---------- Scroll subscription (rAF-throttled, no React re-render) ---------- */
+// One shared animation frame for all scroll subscribers.
+const subscribers = new Set()
+let frame = 0
+const flush = () => {
+  frame = 0
+  for (const callback of subscribers) callback()
+}
+const schedule = () => { if (!frame) frame = requestAnimationFrame(flush) }
 export function useScrollFrame(cb, deps = []) {
+  const latest = useRef(cb)
+  latest.current = cb
   useEffect(() => {
-    let raf = 0
-    const run = () => { raf = 0; cb() }
-    const on = () => { if (!raf) raf = requestAnimationFrame(run) }
-    run(); addEventListener('scroll', on, { passive: true }); addEventListener('resize', on)
-    return () => { cancelAnimationFrame(raf); removeEventListener('scroll', on); removeEventListener('resize', on) }
+    const run = () => latest.current()
+    if (!subscribers.size) {
+      window.addEventListener('scroll', schedule, { passive: true })
+      window.addEventListener('resize', schedule)
+    }
+    subscribers.add(run)
+    schedule()
+    return () => {
+      subscribers.delete(run)
+      if (!subscribers.size) {
+        window.removeEventListener('scroll', schedule)
+        window.removeEventListener('resize', schedule)
+        cancelAnimationFrame(frame)
+        frame = 0
+      }
+    }
   }, deps)
 }
 
@@ -72,7 +88,11 @@ export function ScrollWords({ parts, className = '' }) {
     const r = el.getBoundingClientRect()
     const p = clamp((innerHeight * 0.82 - r.top) / (r.height + innerHeight * 0.25))
     const n = flat.length
-    words.current.forEach((w, i) => w && w.style.setProperty('--l', clamp((p * (n + 6) - i) / 4).toFixed(3)))
+    words.current.forEach((w, i) => {
+      if (!w) return
+      const value = clamp((p * (n + 6) - i) / 4).toFixed(3)
+      if (w.style.getPropertyValue('--l') !== value) w.style.setProperty('--l', value)
+    })
   })
   return <p ref={ref} className={'sw ' + className}>{flat.map(([w, red], i) => <span key={i} ref={e => (words.current[i] = e)} className={red ? 'red' : ''}>{w} </span>)}</p>
 }

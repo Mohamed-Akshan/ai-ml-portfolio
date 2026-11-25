@@ -185,16 +185,14 @@ function Hero({ ready }) {
         <div className="editorial-copy">
 
           <h1>
-            Engineering
+            From real problems
             <br />
-            intelligence.
-            <br />
-            <em>Beyond</em> predictions
+            <em>To</em> intelligent solutions
             <span className="hero-period">.</span>
           </h1>
 
           <p className="editorial-role">
-            AI/ML Engineering | Data Science Undergraduate
+            AI/ML Engineering | AI Full-Stack Development | Data Science Undergraduate
           </p>
 
           <div className="editorial-actions">
@@ -725,31 +723,25 @@ function Toolkit() {
 function Stack() {
   const ref = useRef(null)
 
-  useScrollFrame(() => {
-    const cards =
-      ref.current?.querySelectorAll('.pcard')
+  // Reveal each card once, without measuring layout on every scroll frame.
+  useEffect(() => {
+    const stack = ref.current
+    if (!stack || reduced() || !('IntersectionObserver' in window)) return
 
-    if (!cards) return
+    const cards = Array.from(stack.querySelectorAll('.pcard'))
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return
+        entry.target.classList.add('project-visible')
+        observer.unobserve(entry.target)
+      })
+    }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' })
 
-    cards.forEach((c, i) => {
-      const next = cards[i + 1]
-      let p = 0
+    stack.classList.add('project-reveal-ready')
+    cards.forEach(card => observer.observe(card))
 
-      if (next) {
-        const a = c.getBoundingClientRect()
-        const b = next.getBoundingClientRect()
-
-        p = clamp(
-          1 - (b.top - a.top) / a.height
-        )
-      }
-
-      c.style.setProperty(
-        '--sp',
-        p.toFixed(3)
-      )
-    })
-  })
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div
@@ -762,7 +754,6 @@ function Stack() {
           key={p.id}
           href={'#/project/' + p.id}
           className="pcard"
-          style={{ '--k': k }}
         >
 
           <div className="pc-in">
@@ -1288,7 +1279,8 @@ export default function App() {
   const [ready, setReady] = useState(false)
   const [act, setAct] = useState('')
   const [menu, setMenu] = useState(false)
-  const [prog, setProg] = useState(0)
+  const progressRef = useRef(null)
+  const activeRef = useRef('')
 
   useSmoothScroll()
 
@@ -1329,6 +1321,19 @@ export default function App() {
     }
   }, [])
 
+  /* Pause decorative marquee outside the viewport. */
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return
+    const elements = document.querySelectorAll('.marq > div')
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused'
+      }
+    })
+    elements.forEach(el => { el.style.animationPlayState = 'paused'; observer.observe(el) })
+    return () => observer.disconnect()
+  }, [route, ready])
+
   /* Track route changes */
 
   useEffect(() => {
@@ -1349,14 +1354,10 @@ export default function App() {
   /* Scroll progress indicator */
 
   useScrollFrame(() => {
-    setProg(
-      scrollY /
-      Math.max(
-        1,
-        document.documentElement.scrollHeight -
-        innerHeight
-      ) * 100
-    )
+    const progress = progressRef.current
+    if (!progress) return
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - innerHeight)
+    progress.style.transform = `scaleX(${clamp(scrollY / maxScroll)})`
   })
 
   const pid = route.startsWith('#/project/')
@@ -1410,9 +1411,8 @@ export default function App() {
 
   useScrollFrame(() => {
     if (innerPage) {
-      setAct(
-        pid ? 'projects' : 'about'
-      )
+      const next = pid ? 'projects' : 'about'
+      if (activeRef.current !== next) { activeRef.current = next; setAct(next) }
       return
     }
 
@@ -1430,7 +1430,7 @@ export default function App() {
       }
     })
 
-    setAct(cur)
+    if (activeRef.current !== cur) { activeRef.current = cur; setAct(cur) }
   }, [innerPage, pid])
 
   /* FIXED: Navigation handler */
@@ -1472,10 +1472,9 @@ export default function App() {
       )}
 
       <div
+        ref={progressRef}
         className="progress"
-        style={{
-          transform: `scaleX(${prog / 100})`
-        }}
+        style={{ transform: 'scaleX(0)' }}
       />
 
       {/* Navbar — no name or logo */}
